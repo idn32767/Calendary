@@ -1,15 +1,16 @@
 package com.example.calendary.model
 
-class Day {
-    var number: Int = 0
-    var description: String = ""
+import android.icu.text.CaseMap.Title
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import java.util.UUID
 
-    constructor(number: Int){
-        this.number = number
-    }
+@Entity
+data class Day(
+    @PrimaryKey  val id: UUID = UUID.randomUUID(),
+    val number: Int,
+    val description: String = "",
+  //  @ColumnInfo(index = true) val monthId: UUID  // Внешний ключ для связи с таблицей "months"
 
-    constructor(number: Int, description: String){
-        this.number = number;
-        this.description = description
-    }
-}
+)

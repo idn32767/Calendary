@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id 'kotlin-kapt'  // Убедитесь, что добавлен этот плагин
 }
 
 android {
@@ -34,6 +35,11 @@ android {
 
 dependencies {
 
+
+    def room_version = "2.5.0" // Проверьте, что версия соответствует актуальной
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
     implementation libs.androidx.core.ktx
     implementation libs.androidx.appcompat
     implementation libs.material

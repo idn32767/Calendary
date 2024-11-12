@@ -3,8 +3,6 @@ package com.example.calendary.controller.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.GridLayout
-import android.widget.HorizontalScrollView
 import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -30,9 +28,9 @@ class MonthAdapter(private val months: List<Month>): RecyclerView.Adapter<MonthA
         fun bind(month: Month){                                                  // Метод, который выводит в конкретный элемент списка, значения конктреного объекта модели
             monthTxt.text = "${month.title}"
             val dayAdapter: DayAdapter
-            dayAdapter = DayAdapter(month.days);
+         //   dayAdapter = DayAdapter(month.days);
             recyclerView.layoutManager = GridLayoutManager(itemView.context, 7)
-            recyclerView.adapter = dayAdapter;
+        //    recyclerView.adapter = dayAdapter;
 
 
 

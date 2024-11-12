@@ -1,11 +1,11 @@
 package com.example.calendary.model
 
-class Month {
-    var title: String = ""
-    lateinit var days: ArrayList<Day>
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import java.util.UUID
 
-    constructor(title: String, days: ArrayList<Day>){
-        this.title = title
-        this.days = days
-    }
-}
+@Entity  // Указываем имя таблицы
+data class Month(
+    @PrimaryKey val id: UUID = UUID.randomUUID(),  // Уникальный идентификатор
+    val title: String  // Название месяца
+)
