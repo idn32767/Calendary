@@ -7,19 +7,25 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:id="@+id/main_layout"
     tools:context=".controller.MainActivity">
 
-
-
-    <androidx.recyclerview.widget.RecyclerView
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:id="@+id/month_list"/>
+        android:layout_height="wrap_content"
+        android:id="@+id/txt_date"/>
 
-    <FrameLayout
+    <EditText
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:id="@+id/fragment_view"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Событие"
+        android:id="@+id/edit_event"/>
+
+    <Button
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Применить"
+        android:id="@+id/btn_apply"/>
 
 </LinearLayout>

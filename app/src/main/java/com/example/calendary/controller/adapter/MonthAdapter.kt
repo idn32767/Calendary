@@ -8,7 +8,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.calendary.R
 import com.example.calendary.model.Month
-
+import com.example.calendary.model.MonthWithDays
+import com.example.calendary.controller.DayClickListener
 
 /**
  * @class - адаптер для списка месяцев
@@ -16,7 +17,7 @@ import com.example.calendary.model.Month
  * @author - Vlad
  * Класс для заполнения списка месяцев
  */
-class MonthAdapter(private val months: List<Month>): RecyclerView.Adapter<MonthAdapter.MonthViewHolder>() {
+class MonthAdapter(private val months: List<MonthWithDays>,private val dayClickListener : DayClickListener): RecyclerView.Adapter<MonthAdapter.MonthViewHolder>() {
 
 
     /**
@@ -25,15 +26,12 @@ class MonthAdapter(private val months: List<Month>): RecyclerView.Adapter<MonthA
     inner class MonthViewHolder(itemView: View):RecyclerView.ViewHolder(itemView){
         val monthTxt: TextView = itemView.findViewById(R.id.month_txt)           // Првязываемся к элементу файла который привязали
         val recyclerView: RecyclerView =itemView.findViewById(R.id.days_list)
-        fun bind(month: Month){                                                  // Метод, который выводит в конкретный элемент списка, значения конктреного объекта модели
-            monthTxt.text = "${month.title}"
+        fun bind(month: MonthWithDays){                                                  // Метод, который выводит в конкретный элемент списка, значения конктреного объекта модели
+            monthTxt.text = "${month.month.title}"
             val dayAdapter: DayAdapter
-         //   dayAdapter = DayAdapter(month.days);
+            dayAdapter = DayAdapter(month.days,dayClickListener);
             recyclerView.layoutManager = GridLayoutManager(itemView.context, 7)
-        //    recyclerView.adapter = dayAdapter;
-
-
-
+            recyclerView.adapter = dayAdapter;
         }
     }
 

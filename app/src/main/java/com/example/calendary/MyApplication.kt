@@ -1,6 +1,7 @@
 package com.example.calendary
 
 import android.app.Application
+import androidx.lifecycle.lifecycleScope
 
 /**
  * Класс, который запускается до запуска всех Активностей. Нуждается в регистрвации в Манифесте

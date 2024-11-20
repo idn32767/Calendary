@@ -7,14 +7,20 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.calendary.R
 import com.example.calendary.model.Day
+import com.example.calendary.controller.DayClickListener
 
-class DayAdapter(private val days: List<Day>) : RecyclerView.Adapter<DayAdapter.ViewHolder>() {
+class DayAdapter(private val days: List<Day>,private val dayClickListener : DayClickListener) : RecyclerView.Adapter<DayAdapter.ViewHolder>() {
 
     class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         private val dayTxt: TextView = itemView.findViewById(R.id.day_txt)
 
-        fun bind(day: Day){
+        fun bind(day: Day,dayClickListener: DayClickListener){
             dayTxt.text = "${day.number}"
+            itemView.setOnClickListener(object : View.OnClickListener{
+                override fun onClick(p0: View?) {
+                    dayClickListener.OnDayClick(day)
+                }
+            })
         }
 
     }
@@ -30,6 +36,6 @@ class DayAdapter(private val days: List<Day>) : RecyclerView.Adapter<DayAdapter.
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val day = days.get(position)
-        holder.bind(day)
+        holder.bind(day,dayClickListener)
     }
 }
