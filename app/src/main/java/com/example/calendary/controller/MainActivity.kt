@@ -27,10 +27,13 @@ import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
+import com.example.calendary.ApplicationRepository
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.example.calendary.DayFragment
+import com.example.calendary.SelectDateFragment
+import com.example.calendary.model.MonthEntry
 
 /* FIXME: почему это нужно указывать здесь? */
 @RequiresApi(Build.VERSION_CODES.O)
@@ -47,9 +50,9 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)                    // Привязываем разметку к классу
-        recyclerView = findViewById(R.id.month_list)              // Получаем связь со списком из разметки
+        //recyclerView = findViewById(R.id.month_list)              // Получаем связь со списком из разметки
 
-        val appDatabase: AppDatabase = AppDatabase.getDatabase(this)
+        /*val appDatabase: AppDatabase = AppDatabase.getDatabase(this)
         val currentDate = LocalDate.now()
         val monthList: ArrayList<MonthWithDays> = ArrayList<MonthWithDays>()
         val entries = listOf(MonthEntry(1,java.time.Month.JANUARY,"Январь"),
@@ -67,7 +70,17 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
             monthList.add(MonthWithDays(Month(UUID.randomUUID(),entryId + 1,entry.monthName),dayList))
         }
 
-        val dayDao = appDatabase.dayDao()
+        val dayDao = appDatabase.dayDao()*/
+        ApplicationRepository.fragmentManager = supportFragmentManager
+        if(!ApplicationRepository.hasFragment()){
+            ApplicationRepository.currentFragment = SelectDateFragment()
+            supportFragmentManager.beginTransaction()
+                .add(R.id.main_layout,ApplicationRepository.currentFragment)
+                .setReorderingAllowed(true)
+                .commit()
+        }
+
+
         /*val newDay = Day(
             id = UUID.randomUUID(),  // Уникальный идентификатор
             number = 5,  // Пример: 5-е число месяца
@@ -75,13 +88,9 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
         )*/
 
         // Создаем адаптер, для списка месяцев
-        val monthAdapter: MonthAdapter
-        /* FIXME: пока так. потом можно будет заменить реализацию */
-        monthAdapter = MonthAdapter(monthList,this);
-        recyclerView.adapter = monthAdapter; // Назначаем адаптер списку месяцев
-        recyclerView.layoutManager = LinearLayoutManager(this) // Указываем менеджер компоновки для списка месяцев
 
-        lifecycleScope.launch{
+
+        /*lifecycleScope.launch{
             var months = appDatabase.monthDao().getMonthsWithDays()
             val modifiedMonthIds : MutableSet<Int> = mutableSetOf()
             for((dbMonthId,dbMonth) in months.withIndex()){
@@ -101,7 +110,7 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
                     monthAdapter.notifyItemChanged(modifiedMonthId)
                 }
             }
-        }
+        }*/
 
 // Запустите вставку в базу данных в корутине
 
@@ -144,16 +153,16 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
     }
 
     override fun OnDayClick(day: Day) {
-        Log.d("MainActivity","Нажали на ${day.monthId} / ${day.number}")
+        /*Log.d("MainActivity","Нажали на ${day.monthId} / ${day.number}")
         val dayFragment = DayFragment()
         supportFragmentManager.beginTransaction()
             .add(R.id.fragment_view,dayFragment)
             .setReorderingAllowed(true)
-            .commit()
+            .commit()*/
     }
 
 
-    private data class MonthEntry(val id : Int,val month : java.time.Month,val monthName : String)
+    //private data class MonthEntry(val id : Int,val month : java.time.Month,val monthName : String)
 
     /**
      * Проверяет, является ли сочетание числа, месяца и года корректной датой
