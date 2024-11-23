@@ -8,8 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import com.example.calendary.R
 import com.example.calendary.controller.DayClickListener
 import com.example.calendary.controller.adapter.MonthAdapter
@@ -17,6 +20,7 @@ import com.example.calendary.model.Day
 import com.example.calendary.model.Month
 import com.example.calendary.model.MonthEntry
 import com.example.calendary.model.MonthWithDays
+import com.example.calendary.ApplicationRepository
 import java.time.LocalDate
 import java.util.UUID
 
@@ -70,12 +74,51 @@ class SelectDateFragment : Fragment(),DayClickListener{
             monthList.add(MonthWithDays(Month(UUID.randomUUID(),entryId + 1,entry.monthName),dayList))
         }
 
-
         val monthAdapter = MonthAdapter(monthList,this);
         recyclerView.adapter = monthAdapter; // Назначаем адаптер списку месяцев
         recyclerView.layoutManager = LinearLayoutManager(activity) // Указываем менеджер компоновки для списка месяцев
+        val database = (activity?.application as MyApplication).database
+
+        /* FIXME: вряд ли такое количество данных стоит передавать через событие,
+        *         поэтому получаем их здесь из базы. Какой объект по правилам
+        *         должен этим заниматься? */
+        viewLifecycleOwner.lifecycleScope.launch {
+            val months = database.monthDao().getMonthsWithDays()
+            val modifiedMonthIds: MutableSet<Int> = mutableSetOf()
+            for ((dbMonthId, dbMonth) in months.withIndex()) {
+                Log.d("SelectDateFragment","month: ${dbMonth.month.id} / ${dbMonth.month.monthId}")
+                /* Сыграем на том, что данные для отображения расположены по порядку */
+                val viewMonth = monthList[dbMonth.month.monthId - 1]
+                var hasModifiedDates = false
+                for (dayIdx in 0..<viewMonth.days.size) {
+                    val foundDay = dbMonth.days.find { it.number == viewMonth.days[dayIdx].number }
+                    if (foundDay != null) {
+                        Log.d("SelectDateFragment","Дата : ${dbMonth.month.title} / ${foundDay.number} / ${foundDay.description}")
+                        viewMonth.days[dayIdx] = foundDay
+                        hasModifiedDates = true
+                    }
+                }
+                if(hasModifiedDates){
+                    Log.d("SelectDateFragment","Добавление изменений в месяц: ${dbMonth.month.monthId}")
+                    modifiedMonthIds.add(dbMonth.month.monthId - 1)
+                }
+            }
+            launch(Dispatchers.Main) {
+                /* После получения данных отправляем всё в основной поток и обновляем интерфейс */
+                for (modifiedMonthId in modifiedMonthIds) {
+                    Log.d("notify", modifiedMonthId.toString())
+                    monthAdapter.notifyItemChanged(modifiedMonthId)
+                }
+            }
+        }
+
+
+
     }
 
+    /* Обработчик нажатия на конкретный день месяца. Передаём данные в основное приложение
+    *  через событие. Это один из основных способов передачи данных в том случае, когда их не так много
+    *  и нужно передать их однократно. */
     override fun OnDayClick(month : Month,day: Day) {
         Log.d("SelectDataFragment","Clicked on day ${month.title} / ${day.number}")
         val msgBundle = Bundle()

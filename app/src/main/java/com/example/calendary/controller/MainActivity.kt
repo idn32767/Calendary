@@ -50,27 +50,7 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)                    // Привязываем разметку к классу
-        //recyclerView = findViewById(R.id.month_list)              // Получаем связь со списком из разметки
 
-        /*val appDatabase: AppDatabase = AppDatabase.getDatabase(this)
-        val currentDate = LocalDate.now()
-        val monthList: ArrayList<MonthWithDays> = ArrayList<MonthWithDays>()
-        val entries = listOf(MonthEntry(1,java.time.Month.JANUARY,"Январь"),
-                             MonthEntry(2,java.time.Month.FEBRUARY,"Февраль"),
-                             MonthEntry(3,java.time.Month.FEBRUARY,"Март"),
-                             MonthEntry(4,java.time.Month.FEBRUARY,"Апрель"))
-        for((entryId,entry) in entries.withIndex())
-        {
-            val realMonth = java.time.YearMonth.of(currentDate.year,entry.month)
-            val dayList = ArrayList<Day>()
-            for(dayId in 1..realMonth.lengthOfMonth())
-            {
-                dayList.add(Day(UUID.randomUUID(),dayId,"", UUID.randomUUID()))
-            }
-            monthList.add(MonthWithDays(Month(UUID.randomUUID(),entryId + 1,entry.monthName),dayList))
-        }
-
-        val dayDao = appDatabase.dayDao()*/
         ApplicationRepository.fragmentManager = supportFragmentManager
         if(!ApplicationRepository.hasFragment()){
             ApplicationRepository.currentFragment = SelectDateFragment()
@@ -80,6 +60,7 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
                 .commit()
         }
 
+        /* Подписываемся на сообщения от фрагментов */
         supportFragmentManager.setFragmentResultListener("dateSelected",this,{
               requestKey,bundle -> OnDateSelected(requestKey,bundle)
         })
@@ -87,78 +68,7 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
                 requestKey,bundle -> OnDateModified(requestKey,bundle)
         })
 
-
-
-
-
-        /*val newDay = Day(
-            id = UUID.randomUUID(),  // Уникальный идентификатор
-            number = 5,  // Пример: 5-е число месяца
-            description = "Важное событие",
-        )*/
-
-        // Создаем адаптер, для списка месяцев
-
-
-        /*lifecycleScope.launch{
-            var months = appDatabase.monthDao().getMonthsWithDays()
-            val modifiedMonthIds : MutableSet<Int> = mutableSetOf()
-            for((dbMonthId,dbMonth) in months.withIndex()){
-                /* Сыграем на том, что данные для отображения расположены по порядку */
-                val viewMonth = monthList[dbMonth.month.monthId - 1]
-                for(dayIdx in 0..<viewMonth.days.size) {
-                    val foundDay = dbMonth.days.find { it.number == viewMonth.days[dayIdx].number }
-                    if(foundDay != null) {
-                        viewMonth.days[dayIdx] = foundDay
-                        modifiedMonthIds.add(dbMonthId)
-                    }
-                }
-            }
-            launch (Dispatchers.Main){
-                for(modifiedMonthId in modifiedMonthIds){
-                    Log.d("notify",modifiedMonthId.toString())
-                    monthAdapter.notifyItemChanged(modifiedMonthId)
-                }
-            }
-        }*/
-
-// Запустите вставку в базу данных в корутине
-
-
-        // Запускаем AsyncTask для вставки в базу данных
-        //InsertDayTask(dayDao).execute(newDay)
-
-
-    //    }
-        // Пример использования базы данных
-//        lifecycleScope.launch {
-//            val month = Month(title = "January")
-//            val monthId = database.monthDao().insertMonth(month) // Теперь monthId содержит ID записи
-//            println("Inserted month ID: $monthId")
-//
-//            val day = Day(number = 1, description = "New Year's Day", monthId = monthId.toInt())
-//            database.dayDao().insertDay(day)
-//
-//            val daysForMonth = database.dayDao().getDaysForMonth(monthId.toInt())
-//            println("Days in January: $daysForMonth")
-//        }
-
-
         Log.d("Этап цикла: ", " onCreate")
-        // Собираем данные для списков
-//        val monthList: ArrayList<Month>
-//        monthList = ArrayList()
-//        val  daysList: ArrayList<Day>
-//        daysList = ArrayList()
-//        for (n in 1..30) {
-//            daysList.add(Day(n))
-//        }
-//
-//        monthList.add(Month("Январь", daysList))
-//        monthList.add(Month("Февраль", daysList))
-//        monthList.add(Month("Март", daysList))
-//        monthList.add(Month("Апрель", daysList))
-
 
     }
 
@@ -181,16 +91,29 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
             .commit()
     }
 
+    /**
+     * Запускается по событию, в котором в качестве параметров указываются дата
+     * и введённое пользоватеклем событие. Запускает вставку дня и месяца,
+     * ф затем в главном потоке снова активирует фрагмент для выбора дат
+     * */
     private fun OnDateModified(requestKey : String,bundle : Bundle?){
-        val selectDateFragment = SelectDateFragment()
-        ApplicationRepository.currentFragment = selectDateFragment
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_layout,selectDateFragment)
-            .setReorderingAllowed(true)
-            .commit()
+        /* Запуск асинхронной операции в предназначенном для этого контексте */
+        lifecycleScope.launch {
+            if(bundle != null){
+                modifyDayByBundle(bundle)
+                /* Практически у любого UI любые манипуляции с ним
+                *  должны производиться в основном потоке*/
+                launch (Dispatchers.Main){
+                    val selectDateFragment = SelectDateFragment()
+                    ApplicationRepository.currentFragment = selectDateFragment
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_layout,selectDateFragment)
+                        .setReorderingAllowed(true)
+                        .commit()
+                }
+            }
+        }
     }
-
-    //private data class MonthEntry(val id : Int,val month : java.time.Month,val monthName : String)
 
     /**
      * Проверяет, является ли сочетание числа, месяца и года корректной датой
@@ -207,70 +130,38 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
         }
         return success
     }
+
     /**
-     * Класс для запуска задачи в фоновом потоке
-     */
-    //private class InsertDayTask(private val dayDao: DayDao) : AsyncTask<Day, Unit, Unit>() {
-        /**
-         * Фоновая работа
-         */
-     /*   @SuppressLint("WrongThread")
-        override fun doInBackground(vararg days: Day?) {
-            days.forEach { day ->
-                if (day != null) {
-                    dayDao.insertDay(day)  // Выполняем вставку
-                }
-            }
-            Log.d("Начали ", "Получение")
-
-            SelectDayTask(dayDao).execute(Unit)
-
-        }
-        override fun onPostExecute(result: Unit?) {
-            super.onPostExecute(result)
-            println("День успешно добавлен в базу данных")
-        }
-    }*/
-
-    //private class SelectDayTask(private val dayDao: DayDao) : AsyncTask<Unit, Unit, Unit>() {
-        /**
-         * Фоновая работа
-         */
-       /* override fun doInBackground(vararg p0: Unit?) {
-          Log.d("Получение ", dayDao.getDays().toString())
-        }
-        override fun onPostExecute(result: Unit?) {
-            super.onPostExecute(result)
-            println("День успешно получени из базы данных")
-        }
-
-        override fun onPreExecute() {
-            super.onPreExecute()
-            println("День ")
-        }
-    }
-    override fun onStart() {
-        super.onStart()
-        Log.d("Этап цикла: ", " onStart")
+     * Записывает изменённые данные, которые находятся в событии,
+     * в базу
+     * */
+    private suspend fun modifyDayByBundle(bundle : Bundle){
+        val monthUUID = UUID.fromString(bundle.getString("monthUUID"))
+        val monthNumber = bundle.getInt("monthNumber")
+        val monthTitle = bundle.getString("monthTitle") ?: ""
+        val dayId = UUID.fromString(bundle.getString("dayId"))
+        val dayNumber = bundle.getInt("dayNumber")
+        val description = bundle.getString("description") ?: ""
+        /* FIXME: назначить транзакцию ? */
+        val resMonthId = addOrModifyMonth(monthUUID,monthNumber,monthTitle)
+        val resDayId = addOrModifyDay(dayId,monthUUID,dayNumber,description)
     }
 
-    override fun onResume() {
-        super.onResume()
-        Log.d("Этап цикла: ", " onResume")
+    /* Добавление или изменение месяца в БД */
+    private suspend fun addOrModifyMonth(monthId : UUID,monthNumber : Int,monthTitle : String){
+        val month = Month(monthId,monthNumber,monthTitle)
+        val resMonthId = database.monthDao().insertMonth(month)
+        Log.d("MainActivity","New Month : ${monthId} / ${month.id} / ${month.title}")
+        return resMonthId
     }
 
-    override fun onPause() {
-        super.onPause()
-        Log.d("Этап цикла: ", " onPause")
+    /* Добавление или изменение события в БД */
+    private suspend fun addOrModifyDay(dayId : UUID,monthId : UUID,dayNumber : Int,description : String){
+        val day = Day(dayId,dayNumber,description,monthId)
+        var resDayId = database.dayDao().insertDay(day)
+        Log.d("MainActivity","New Day : ${monthId} / ${dayId} / ${day.id} / ${description}")
+        return resDayId
     }
 
-    override fun onStop() {
-        super.onStop()
-        Log.d("Этап цикла: ", " onStop")
-    }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("Этап цикла: ", " onDestroy")
-    }*/
 }
