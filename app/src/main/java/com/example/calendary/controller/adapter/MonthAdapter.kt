@@ -29,7 +29,7 @@ class MonthAdapter(private val months: List<MonthWithDays>,private val dayClickL
         fun bind(month: MonthWithDays){                                                  // Метод, который выводит в конкретный элемент списка, значения конктреного объекта модели
             monthTxt.text = "${month.month.title}"
             val dayAdapter: DayAdapter
-            dayAdapter = DayAdapter(month.days,dayClickListener);
+            dayAdapter = DayAdapter(month.days,month.month,dayClickListener);
             recyclerView.layoutManager = GridLayoutManager(itemView.context, 7)
             recyclerView.adapter = dayAdapter;
         }

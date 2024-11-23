@@ -76,12 +76,15 @@ class SelectDateFragment : Fragment(),DayClickListener{
         recyclerView.layoutManager = LinearLayoutManager(activity) // Указываем менеджер компоновки для списка месяцев
     }
 
-    override fun OnDayClick(day: Day) {
-        Log.d("SelectDataFragment","Clicked on day ${day.number}")
-        val fragment = DayFragment()
-        ApplicationRepository.fragmentManager.beginTransaction()
-            .replace(R.id.main_layout,fragment)
-            .setReorderingAllowed(true)
-            .commit()
+    override fun OnDayClick(month : Month,day: Day) {
+        Log.d("SelectDataFragment","Clicked on day ${month.title} / ${day.number}")
+        val msgBundle = Bundle()
+        msgBundle.putInt("monthNumber",month.monthId)
+        msgBundle.putString("monthUUID",month.id.toString())
+        msgBundle.putString("monthTitle",month.title)
+        msgBundle.putString("dayId",day.id.toString())
+        msgBundle.putInt("dayNumber",day.number)
+        msgBundle.putString("description",day.description)
+        ApplicationRepository.fragmentManager.setFragmentResult("dateSelected",msgBundle)
     }
 }

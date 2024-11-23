@@ -80,6 +80,16 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
                 .commit()
         }
 
+        supportFragmentManager.setFragmentResultListener("dateSelected",this,{
+              requestKey,bundle -> OnDateSelected(requestKey,bundle)
+        })
+        supportFragmentManager.setFragmentResultListener("dateModified",this,{
+                requestKey,bundle -> OnDateModified(requestKey,bundle)
+        })
+
+
+
+
 
         /*val newDay = Day(
             id = UUID.randomUUID(),  // Уникальный идентификатор
@@ -152,7 +162,7 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
 
     }
 
-    override fun OnDayClick(day: Day) {
+    override fun OnDayClick(month : Month,day: Day) {
         /*Log.d("MainActivity","Нажали на ${day.monthId} / ${day.number}")
         val dayFragment = DayFragment()
         supportFragmentManager.beginTransaction()
@@ -161,6 +171,24 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
             .commit()*/
     }
 
+    private fun OnDateSelected(requestKey : String,bundle : Bundle?){
+        val dayFragment = DayFragment()
+        dayFragment.arguments = bundle
+        ApplicationRepository.currentFragment = dayFragment
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_layout,dayFragment)
+            .setReorderingAllowed(true)
+            .commit()
+    }
+
+    private fun OnDateModified(requestKey : String,bundle : Bundle?){
+        val selectDateFragment = SelectDateFragment()
+        ApplicationRepository.currentFragment = selectDateFragment
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_layout,selectDateFragment)
+            .setReorderingAllowed(true)
+            .commit()
+    }
 
     //private data class MonthEntry(val id : Int,val month : java.time.Month,val monthName : String)
 
