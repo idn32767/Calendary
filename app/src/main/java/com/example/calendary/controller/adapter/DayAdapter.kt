@@ -1,5 +1,8 @@
 package com.example.calendary.controller.adapter
 
+import android.graphics.drawable.AnimatedVectorDrawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.VectorDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +22,9 @@ class DayAdapter(private val days: List<Day>,
 
         fun bind(day: Day,month : Month,dayClickListener: DayClickListener){
             dayTxt.text = "${day.number}"
+            if((day.description != null) && (day.description != "")){
+                dayTxt.setBackgroundResource(R.drawable.day_background_task)
+            }
             itemView.setOnClickListener(object : View.OnClickListener{
                 override fun onClick(p0: View?) {
                     dayClickListener.OnDayClick(month,day)
