@@ -88,6 +88,10 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
         supportFragmentManager.beginTransaction()
             .replace(R.id.main_layout,dayFragment)
             .setReorderingAllowed(true)
+            /* Сохраняем предыдущий фрагмент (фрагмент выбора дат),
+               чтобы вернуться к нему по нажатию кнопки "назад"
+            * */
+            .addToBackStack("")
             .commit()
     }
 
@@ -106,9 +110,13 @@ class MainActivity : AppCompatActivity(),DayClickListener  {
                 launch (Dispatchers.Main){
                     val selectDateFragment = SelectDateFragment()
                     ApplicationRepository.currentFragment = selectDateFragment
+                    /* Данные были изменены. Поэтому убираем ранее сохранённый фрагмент выбора дат
+                    *  и заменяем его на новый. Это так же приведёт к перезапросу данных. */
+                    supportFragmentManager.popBackStack(null,FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.main_layout,selectDateFragment)
                         .setReorderingAllowed(true)
+
                         .commit()
                 }
             }
