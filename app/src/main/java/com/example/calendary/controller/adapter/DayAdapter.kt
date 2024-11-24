@@ -22,6 +22,9 @@ class DayAdapter(private val days: List<Day>,
 
         fun bind(day: Day,month : Month,dayClickListener: DayClickListener){
             dayTxt.text = "${day.number}"
+            /* Назначение альтернативного фона, если на данный день назначено задание.
+            *  Сейчас используются два идентичных изображения с разным цветом. Как сделать "параметризованное"
+            *  изображение, параметры которого можно задать программно? */
             if((day.description != null) && (day.description != "")){
                 dayTxt.setBackgroundResource(R.drawable.day_background_task)
             }
